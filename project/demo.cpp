@@ -9,14 +9,19 @@
 #include <random>
 #pragma comment(lib, "Winmm.lib")
 
+
+int currentmode = 0 ;
 int len = 0;
 int page;
 int mode = 0;
 int musicon = 1;
 int ismps = 0;   // 0 means meter per second
 int isfaren = 0; // 0 means celcius
+int iserror = 0; // 0 means correct
 
 char name[100], tempstr[100];
+char hometown[20] = {"Dhaka"};
+
 using namespace std;
 #define screenWidth 700
 #define screenHeight 315
@@ -24,6 +29,10 @@ using namespace std;
 
 char sky[5][30] = {"sky\\sunny.bmp", "sky\\cloudy.bmp", "sky\\rainy.bmp", "sky\\partlycloudy.bmp", "sky\\thunder.bmp"};
 
+char recents[5][30] = {"Dhaka", "Feni", "Kushtia", "Khulna", "Rajshahi"};
+char suggestions[5][20] = {};
+int rendex = 0;
+void smallbug();
 struct Weather
 {
     float temperature;
@@ -80,7 +89,7 @@ struct Weather getWeather(const char *city_name)
             return cities[i].weather_data;
         }
     }
-    struct Weather default_weather = {0.0, 0.0, 0.0, 0.0, 0.0};
+    struct Weather default_weather = {0.0, 0.0, 0.0, 0.0, 0};
     return default_weather;
 }
 
@@ -120,12 +129,13 @@ void drawWeatherInfo(char *city_name)
 
     if (city_weather.temperature == 0.0)
     {
-        page = 1;
-        iText(100, 400, "City not found", GLUT_BITMAP_TIMES_ROMAN_24);
+        iserror = 1;
+        page = 10; // errror
     }
     else
     {
-        int x = 382;
+        iserror = 0;
+        int x = 412;
         char info[100];
         // sprintf(info, "%s", city_name);
         // iText(x, 400, info, GLUT_BITMAP_TIMES_ROMAN_24);
@@ -154,19 +164,16 @@ void drawWeatherInfo(char *city_name)
 
         float teampa2 = convertSpeed(ismps, city_weather.wind);
 
-        if (!ismps )
+        if (!ismps)
         {
             sprintf(info, "%.1f km/h", teampa2);
         }
-        if (ismps )
+        if (ismps)
         {
             sprintf(info, "%.1f m/s", teampa2);
         }
 
         iText(x, 286, info, GLUT_BITMAP_TIMES_ROMAN_24);
-
-        // sprintf(info, "Atmospheric Pressure: %.1f mmHg", city_weather.sky_index);
-        // iText(x, 150, info, GLUT_BITMAP_TIMES_ROMAN_24);
     }
 }
 
@@ -177,20 +184,12 @@ float r1[6] = {1, 0, 3.4, 2, 2, 5};
 float r2[6] = {0, 1, 2.3, 3, 3, 4};
 float r3[6] = {2.2, 3, 4, 0, 1, 3.1};
 float r4[6] = {3, 2, 0.7, 1, 0, 4};
-
 float r5[6] = {0, 1, 2.3, 3, 3, 4};
-
 float r6[6] = {2.2, 3, 4, 0, 1, 3.1};
-
 float r7[6] = {3, 2, 0.7, 1, 0, 4};
-
 float r8[6] = {0, 1, 2.3, 3, 3, 4};
-
 float r9[6] = {2.2, 3, 4, 0, 1, 3.1};
-
 float r10[6] = {3, 2, 0.7, 1, 0, 4};
-
-// float r5[6] ={3.8,4.2,0,2,3,1} ;
 
 float ar[6];
 
@@ -202,20 +201,21 @@ void drawgraph()
     {
         memcpy(ar, r1, sizeof(ar));
     }
-    else if (temp >= 28 && temp <=28.5)
+    else if (temp >= 28 && temp <= 28.5)
     {
         memcpy(ar, r2, sizeof(ar));
     }
-    else if (temp >28.5 && temp <= 29)
+    else if (temp > 28.5 && temp <= 29)
     {
         memcpy(ar, r3, sizeof(ar));
     }
 
-    else if (temp > 29 && temp <= 29.5 )
+    else if (temp > 29 && temp <= 29.5)
     {
         memcpy(ar, r4, sizeof(ar));
     }
-    else if (temp > 29.5 && temp <= 30){
+    else if (temp > 29.5 && temp <= 30)
+    {
         memcpy(ar, r5, sizeof(ar));
     }
 
@@ -228,13 +228,11 @@ void drawgraph()
         memcpy(ar, r7, sizeof(ar));
     }
 
-    else if (temp > 31 )
+    else if (temp > 31)
 
     {
         memcpy(ar, r8, sizeof(ar));
     }
-
-
 
     iSetColor(255, 100, 0);
 
@@ -308,27 +306,87 @@ void drawgraph()
     iShowBMP2(760, yop, sky[high4], 0);
 }
 
+void drawtodaygraph(){
+    // x = 115, 181, 243,307, 371, 435, 499, 563, 627, 691, 755, 819, 883.
+    float temp = city_weather.temperature;
+
+    if (temp < 28)
+    {
+        memcpy(ar, r1, sizeof(ar));
+    }
+    else if (temp >= 28 && temp <= 28.5)
+    {
+        memcpy(ar, r2, sizeof(ar));
+    }
+    else if (temp > 28.5 && temp <= 29)
+    {
+        memcpy(ar, r3, sizeof(ar));
+    }
+
+    else if (temp > 29 && temp <= 29.5)
+    {
+        memcpy(ar, r4, sizeof(ar));
+    }
+    else if (temp > 29.5 && temp <= 30)
+    {
+        memcpy(ar, r5, sizeof(ar));
+    }
+
+    else if (temp > 30 && temp <= 30.5)
+    {
+        memcpy(ar, r6, sizeof(ar));
+    }
+    else if (temp > 30.5 && temp <= 31)
+    {
+        memcpy(ar, r7, sizeof(ar));
+    }
+
+    else if (temp > 31)
+
+    {
+        memcpy(ar, r8, sizeof(ar));
+    }
+
+    iSetColor(16 , 244 , 241);
+int ycon  = 40 ;
+int xan = 23; 
+
+    // x = 115, 181, 243,307, 371, 435, 499, 563, 627, 691, 755, 819, 883.
+    iLine(24,165, 148, ycon + 4 * temp);
+    iLine( 148, ycon + 4 * temp ,171, ycon + 4 * (temp + ar[4]));
+    iLine(171, ycon + 4 *(temp + ar[4]), 247, ycon + 4 * (temp - ar[0]));
+    iLine(247, ycon + 4 * (temp - ar[0]), 330, ycon + 4 * (temp + ar[1]));
+    iLine(330, ycon + 4 * (temp + ar[1]), 406, ycon + 4 * (temp - ar[2]));
+    iLine(406, ycon + 4 * (temp - ar[2]), 487, ycon + 4 * (temp + ar[3]));
+    iLine(487, ycon + 4 * (temp + ar[3]), 577, ycon + 4 * (temp - ar[4]));
+    iLine(577, ycon + 4 * (temp - ar[4]), 643, ycon + 4 * (temp + ar[5]));
+    iLine(643, ycon + 4 * (temp + ar[5]), 745, ycon + 4 * (temp - ar[6]));
+
+
+
+}
+
 void drawskyemoji()
-{
+{ 
     if (city_weather.sky_index == 0)
     {
         iShowBMP2(740, 317, sky[0], 0);
-        iText(750, 296, "Clear Sky", GLUT_BITMAP_TIMES_ROMAN_24);
+        iText(750, 289, "Clear Sky", GLUT_BITMAP_TIMES_ROMAN_24);
     }
     if (city_weather.sky_index == 1)
     {
         iShowBMP2(740, 317, sky[1], 0);
-        iText(750, 296, "Cloudy", GLUT_BITMAP_TIMES_ROMAN_24);
+        iText(750, 289, "Cloudy", GLUT_BITMAP_TIMES_ROMAN_24);
     }
     if (city_weather.sky_index == 2)
     {
         iShowBMP2(740, 317, sky[2], 0);
-        iText(750, 296, "Rainy", GLUT_BITMAP_TIMES_ROMAN_24);
+        iText(750, 289, "Rainy", GLUT_BITMAP_TIMES_ROMAN_24);
     }
     if (city_weather.sky_index == 3)
     {
         iShowBMP2(740, 317, sky[3], 0);
-        iText(742, 294, "Partly cloudy", GLUT_BITMAP_TIMES_ROMAN_24);
+        iText(742, 289, "Partly cloudy", GLUT_BITMAP_TIMES_ROMAN_24);
     }
     if (city_weather.sky_index == 4)
     {
@@ -336,6 +394,7 @@ void drawskyemoji()
         iText(718, 289, "ThunderStorm", GLUT_BITMAP_TIMES_ROMAN_24);
     }
 }
+
 
 void drawhompage()
 {
@@ -366,15 +425,39 @@ void drawtoday()
     name[0] = toupper(name[0]);
     iText(770, 484, name, GLUT_BITMAP_TIMES_ROMAN_24);
 
+    if (isfaren == 1)
+    {
+        iShowBMP(888, 360, "buttons//isfa.bmp");
+    }
+    if (isfaren == 0)
+    {
+        iShowBMP(888, 360, "buttons//isce.bmp");
+    }
+    if (ismps == 1)
+    {
+        iShowBMP(890, 285, "buttons//ismps.bmp");
+    }
+    if (ismps == 0)
+    {
+        iShowBMP(890, 285, "buttons//iskm.bmp");
+    }
+
     drawWeatherInfo(name);
     drawskyemoji();
 }
 
-drawcheckweather()
+void drawcheckweather()
 {
     // iSetColor(128,128,128);
     iFilledRectangle(0, 0, 1050, 545);
     iShowBMP(0, 0, "page\\checkweather.bmp");
+    // int xc = 100 ;
+    iText(358, 510, hometown, GLUT_BITMAP_TIMES_ROMAN_24);
+
+    for (int i = 0; i < 5; i++)
+    {
+        iText(45, 216 - 50 * i, recents[i], GLUT_BITMAP_TIMES_ROMAN_24);
+    }
 }
 void drawcredits()
 {
@@ -389,32 +472,120 @@ void drawupcoming()
     iShowBMP(0, 0, "page\\upcoming3.bmp");
 }
 
-drawsettings()
+void drawsettings()
 {
     iSetColor(128, 128, 128);
     iFilledRectangle(0, 0, 1050, 545);
     iShowBMP(0, 0, "page\\settings.bmp");
+    int yuu = 390;
+    if (isfaren == 0)
+    {
+        iShowBMP(480, yuu, "buttons\\celgreen.bmp");
+        iShowBMP(750, yuu, "buttons\\fared.bmp");
+    }
+
+    if (isfaren == 1)
+    {
+        iShowBMP(480, yuu, "buttons\\celred.bmp");
+        iShowBMP(750, yuu, "buttons\\fagreen.bmp");
+    }
+    int yt = 300;
+    if (ismps == 1)
+    {
+        iShowBMP(480, yt, "buttons\\ismpsg.bmp");
+        iShowBMP(750, yt, "buttons\\iskmr.bmp");
+    }
+    if (ismps == 0)
+    {
+        iShowBMP(480, yt, "buttons\\ismpsr.bmp");
+        iShowBMP(750, yt, "buttons\\iskmg.bmp");
+    }
 }
+
+void drawerror()
+{
+    iSetColor(128, 128, 128);
+    iFilledRectangle(0, 0, 1050, 545);
+    iShowBMP(0, 0, "page\\error.bmp");
+}
+
 int state = 0;
 ;
 int index;
 
+void refreshbyrecent(){
+                    page = 2;
+                    state = 1;
+                    name[0] = toupper(name[0]);
+                    for (int i = 4; i > 0; i--)
+                    {
+                        recents[i][0] = toupper(recents[i][0]);
+                        strcpy(recents[i], recents[i - 1]);
+                    }
+                    strcpy(recents[0], name);
+
+                    for (int i = 0; i < index; i++)
+                    {
+                        tempstr[i] = 0;
+                    }
+                    index = 0;
+                    state = 0;
+                    // deteting all elements of an array
+
+                    for (int i = 0; i < 6; i++)
+                    {
+                        ar[i] = 0;
+                    }
+
+}
 void refreshWeather()
 {
     page = 2;
     mode = 0;
     strcpy(name, tempstr);
-    // printf("%s\n", name);
+
+    // update recents
+
+    name[0] = toupper(name[0]);
+    for (int i = 4; i > 0; i--)
+    {
+        recents[i][0] = toupper(recents[i][0]);
+        strcpy(recents[i], recents[i - 1]);
+    }
+    strcpy(recents[0], name);
+
     for (int i = 0; i < index; i++)
+    {
         tempstr[i] = 0;
+    }
     index = 0;
     state = 0;
     // deteting all elements of an array
-    
+
     for (int i = 0; i < 6; i++)
     {
         ar[i] = 0;
     }
+}
+
+
+int cstate = 0;
+int cindex = 0 ; 
+char utemp[20] ={}; 
+
+void refreshlocation()
+{
+    
+   // currentmode = 0;
+    strcpy(hometown, utemp);
+    hometown[0] = toupper(hometown[0]);  
+    for (int i = 0; i < cindex; i++)
+    {
+        utemp[i] = 0;
+    }
+   
+    cindex = 0;
+    cstate = 0;  
 }
 
 void iKeyboard(unsigned char key)
@@ -443,13 +614,49 @@ void iKeyboard(unsigned char key)
         }
         else
         {
-            // name[index]=key;
+     
             tempstr[index] = key;
 
             index++;
             PlaySound("sound//brkey.wav", NULL, SND_ASYNC);
-            //  strcpy(name, str);
+    
         }
+    }
+
+
+    if(currentmode ==1){
+        if (key == '\r')
+        {
+            // cstate = 1;
+            strcpy(hometown,utemp);
+            hometown[0] = toupper(hometown[0]);  
+
+            strcpy(utemp,"");
+            PlaySound("sound//button.wav", NULL, SND_ASYNC);
+        }
+
+        // if (cstate == 1)
+        // {
+        //    refreshlocation();
+        // }
+        else if (key == '\b')
+        {
+            if (cindex > 0)
+            {
+                cindex--;
+                utemp[cindex] = 0;
+                PlaySound("sound//brkey.wav", NULL, SND_ASYNC);
+            }
+        }
+        else
+        {
+           
+            utemp[cindex] = key;
+            cindex++;
+            PlaySound("sound//brkey.wav", NULL, SND_ASYNC);
+          
+        }
+
     }
 }
 
@@ -459,7 +666,7 @@ void iDraw()
     if (page == 0)
         drawhompage();
     if (page == 1)
-    {
+    {iSetColor(0, 0, 05);
         if (city_weather.temperature == 0.0)
         {
             iText(100, 400, "City not found", GLUT_BITMAP_TIMES_ROMAN_24);
@@ -471,11 +678,17 @@ void iDraw()
             iSetColor(0, 0, 05);
             iText(36, 315, tempstr, GLUT_BITMAP_TIMES_ROMAN_24);
         }
+        if(currentmode ==1 ){
+           //strcpy(hometown,"");
+           smallbug();
+            
+        }
     }
 
     if (page == 2)
     {
         drawtoday();
+        drawtodaygraph();
     }
     if (page == 3)
     {
@@ -487,8 +700,13 @@ void iDraw()
     {
         drawcredits();
     }
-    if(page == 9){
+    if (page == 9)
+    {
         drawsettings();
+    }
+    if (page == 10)
+    {
+        drawerror();
     }
 }
 
@@ -505,25 +723,26 @@ void iMouse(int button, int state, int mx, int my)
         {
             if (mx >= 0 && mx <= 350)
             {
-                if (my >= 245 && my <= 340){
-                        page = 1;
+                if (my >= 245 && my <= 340)
+                {
+                    page = 1;
                 }
-                  //  
+                //
             }
 
             if (mx >= 9 && mx <= 187)
             {
                 if (my >= 13 && my <= 79)
                 {
-                  exit(0);
+                    exit(0);
                 }
                 else if (my >= 83 && my <= 152)
                 {
-                   page = 7;
+                    page = 7;
                 } // 7 - credits
                 else if (my >= 156 && my <= 225)
                 {
-                    page = 9 ; //9 - settings  
+                    page = 9; // 9 - settings
                 }
             }
         }
@@ -533,30 +752,39 @@ void iMouse(int button, int state, int mx, int my)
             if (mx >= 0 && mx <= 120 && my >= 450 && my <= 540)
                 page = 0;
         }
-        if(page == 9){
+        if (page == 9) // settings
+        {
 
-             if (mx >= 0 && mx <= 120 && my >= 450 && my <= 540)
+            if (mx >= 0 && mx <= 120 && my >= 450 && my <= 540)
                 page = 0;
 
-                if(mx > 422 && mx <= 586){
-                    if(my > 423 && my <= 475){
-                        isfaren =  0 ; 
-
-                    }
-                    if(my > 315 && my <= 368){
-                                ismps =  0 ;}
+            if (mx > 491 && mx <= 645)
+            {
+                if (my > 403 && my <= 458)
+                {
+                    isfaren = 0;
                 }
-                if(mx > 607 && mx <= 766){
-                    if(my > 423 && my <= 475){
-                        isfaren =  1 ; 
-
-                    }
-                    if(my > 315 && my <= 368){
-                                ismps =  1 ;}
+                if (my > 315 && my <= 368)
+                {
+                    ismps = 1;
                 }
-
-
-
+            }
+            if (mx > 760 && mx <= 910)
+            {
+                if (my > 390 && my <= 455)
+                {
+                    isfaren = 1;
+                }
+                if (my > 315 && my <= 368)
+                {
+                    ismps = 0;
+                }
+            }
+        }
+        if (page == 10)
+        {
+            if (mx >= 0 && mx <= 120 && my >= 450 && my <= 540)
+                page = 0;
         }
 
         if (page == 1) // checkweather mode (input)
@@ -565,12 +793,70 @@ void iMouse(int button, int state, int mx, int my)
             {
                 mode = 1;
             }
+             if (mx >= 240 && mx <= 365 && my >= 440 && my <= 464) // setcurrentlocationbutton
+            {   mode = 0 ;
+                currentmode = 1;
+                strcpy(hometown, "");
+                strcpy(utemp, "");
+
+                cindex =0 ; 
+                
+              // strcpy(utemp,"");
+            }
+
 
             if (mx >= 525 && mx <= 610 && my >= 288 && my <= 350)
             {
                 page = 2;
                 state = 1;
                 refreshWeather();
+            }
+            if (mx >= 874 && mx <= 1033 && my >= 65 && my <= 111 && page == 1)
+                page = 0;
+            // x = 30 | 215
+            if (mx > 30 && mx <= 215)
+            {
+                if (my > 192 && my <= 237)
+                {
+                    
+                    strcpy(name, recents[0]);
+
+                   refreshbyrecent();
+                    
+
+                }
+
+                if (my > 143 && my <= 190)
+                {
+                  
+                    strcpy(name, recents[1]);
+                      refreshbyrecent();
+
+                    
+                }
+                if (my > 100 && my <= 140)
+                {
+                   
+                      strcpy(name, recents[2]);
+                      refreshbyrecent();
+                }
+                if (my > 47 && my <= 99)
+                {
+                      strcpy(name, recents[3]);
+                      refreshbyrecent();
+                }
+                if (my > 0 && my <= 47)
+                {
+                     strcpy(name, recents[4]);
+                      refreshbyrecent();
+                }
+            }
+
+           
+            if (mx > 351 && mx < 567 && my >= 480 && my <= 535)
+            {
+                 strcpy(name, hometown);
+                      refreshbyrecent();
             }
         }
 
@@ -589,14 +875,13 @@ void iMouse(int button, int state, int mx, int my)
                 page = 3;
             }
 
-            // x = 887, y= 368 ,x = 966, y= 425
-            // x = 970, y= 365,x = 1047, y= 424
+          
 
             if (mx >= 887 && mx <= 966)
             {
                 if (my >= 368 && my <= 425)
                 {
-                    isfaren = 0;
+                    isfaren = 1;
                 }
                 else if (my >= 300 && my <= 362)
                 {
@@ -607,7 +892,7 @@ void iMouse(int button, int state, int mx, int my)
             {
                 if (my >= 365 && my <= 424)
                 {
-                    isfaren = 1;
+                    isfaren = 0;
                 }
                 else if (my >= 300 && my <= 362)
                 {
@@ -621,7 +906,6 @@ void iMouse(int button, int state, int mx, int my)
             if (mx >= 874 && mx <= 1033 && my >= 65 && my <= 111 && page == 3)
                 page = 0;
         }
-        
 
         if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
         {
@@ -630,15 +914,28 @@ void iMouse(int button, int state, int mx, int my)
 
     printf("x = %d, y= %d ", mx, my);
     printf("\n");
-    cout << ismps << endl;
 
-    // printf("page = %d\n", page);
-    // cout << city_weather.temperature << endl;
+  
+
+    cout<< " current mode " << currentmode <<endl ; 
+    cout<< "  mode " << mode <<endl ; 
+    cout<< utemp << endl ; 
+    cout << hometown << endl;
+
+
+    
+}
+
+void smallbug(){
+
+    iSetColor(0, 0, 05);
+            iText(364, 505, utemp, GLUT_BITMAP_TIMES_ROMAN_24);
+
 }
 
 void iMouseMove(int mx, int my)
 {
-    printf("x = %d, y= %d\n", mx, my);
+   
 }
 
 int main()
